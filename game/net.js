@@ -119,7 +119,7 @@ export class Host {
     const room = this.room;
     const core = this.core;
     core.beginRound();
-    const t0 = room.matchNow() + T.bannerMs;
+    const t0 = room.matchNow() + T.bannerMs + (core.n === 1 ? T.openingMs : 0); // the first round has a GO of its own before the banner
     room.setState('b', null);
     this.lastFlush = -1e9;
     const g = {

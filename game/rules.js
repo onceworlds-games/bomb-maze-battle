@@ -31,6 +31,7 @@ export const MAP_LABEL = { classic: 'CLASSIC', cross: 'CROSSROADS', rings: 'RING
 // ---- timing (ms)
 export const T = {
   bannerMs: 2600, // "LAST ONE STANDING"
+  openingMs: 800, // the first round of a match starts with a GO
   settleMs: 650, // once one or none is left, wait for late claims before the round is decided
   endMs: 2000, // the arena stays live for the winner's moment
   scoreMs: 4200,
