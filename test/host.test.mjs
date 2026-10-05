@@ -42,6 +42,8 @@ function makeRoom({ meId = 'h1', others = ['h2'], seed = 77, settings = { wins: 
   return { room, clock };
 }
 
+const OPEN = T.bannerMs + T.openingMs; // the first round of a match: a GO, then the banner
+
 function adapter(clock, self = { x: 1.5, y: 1.5 }) {
   const badges = [];
   return { nowMs: () => clock.wall, selfBody: () => self, onBadge: (b) => badges.push(b), badges, self };
@@ -74,8 +76,8 @@ test('a match starts from the room: a valid record with the table, the world and
   assert.deepEqual(g.roster.map((r) => r.id), ['h1', 'h2', 'bot1', 'bot2']);
   assert.deepEqual(g.roster.map((r) => r.c), [0, 1, 2, 3]);
   assert.ok(g.roster[2].name && g.roster[3].name);
-  assert.equal(g.until, T.bannerMs);
-  assert.equal(g.t0, T.bannerMs);
+  assert.equal(g.until, OPEN);
+  assert.equal(g.t0, OPEN);
   assert.deepEqual(g.wins, { h1: 0, h2: 0, bot1: 0, bot2: 0 });
   assert.equal(g.cr.length, Math.ceil(N / 4));
   assert.deepEqual(g.bombs, []);
@@ -174,7 +176,7 @@ test('the banner gives way to play, bombs come from the host\'s check, and refus
   step(host, clock, 2000);
   assert.equal(readG(room).phase, 'banner');
   assert.equal(host.onMessage({ t: 'bomb', rid: 'm1.1', x: 13, y: 11 }, { id: 'h2' }), false, 'nothing during the banner');
-  step(host, clock, 800);
+  step(host, clock, OPEN - 2000 + 100);
   assert.equal(readG(room).phase, 'play');
   const rid = 'm1.1';
   assert.equal(host.onMessage({ t: 'bomb', rid, x: 13, y: 11 }, { id: 'h2' }), true);
@@ -216,7 +218,7 @@ test('a blast that gets someone is theirs to report; a shield takes it; the host
   host.adopt();
   presence(room, 'h2', 13.5, 11.5, 1);
   presence(room, 'h1', 1.5, 1.5, 1);
-  step(host, clock, T.bannerMs + 100);
+  step(host, clock, OPEN + 100);
   const rid = 'm1.1';
   host.onMessage({ t: 'bomb', rid, x: 13, y: 11 }, { id: 'h2' });
   step(host, clock, FUSE_MS + 60);
@@ -235,7 +237,7 @@ test('pick-ups: the first to say it gets it, and only if they are close', () => 
   const host = new Host(room, adapter(clock));
   host.adopt();
   presence(room, 'h2', 13.5, 11.5, 1);
-  step(host, clock, T.bannerMs + 100);
+  step(host, clock, OPEN + 100);
   const sim = host.core.sim;
   sim.items.push({ i: idx(13, 10), k: 'r', born: 0 });
   sim.dirty = true;
@@ -253,7 +255,7 @@ test('kicks need the boot and a bomb next to you', () => {
   const host = new Host(room, adapter(clock));
   host.adopt();
   presence(room, 'h2', 12.5, 11.5, 1);
-  step(host, clock, T.bannerMs + 100);
+  step(host, clock, OPEN + 100);
   const sim = host.core.sim;
   sim.stats.get('bot1').b = 1;
   sim.placeBomb('h2', 13, 11);
@@ -326,7 +328,7 @@ test('a new host carries on from the record, mid-round, and the old one does not
   for (const id of ['h1', 'h2', 'h3']) presence(room, id, 1.5, 1.5, 1);
   presence(room, 'h2', 13.5, 11.5, 1);
   presence(room, 'h3', 13.5, 1.5, 1);
-  step(h1, clock, T.bannerMs + 100);
+  step(h1, clock, OPEN + 100);
   host1Place(h1, room);
   step(h1, clock, 20000);
   const before = readG(room);
@@ -364,7 +366,7 @@ test('a new host carries on from the record, mid-round, and the old one does not
   assert.equal(readG(r3).by, 'h1');
   assert.equal(readG(r3).phase, 'banner');
   assert.equal(fresh.core.n, 1);
-  step(fresh, c3, T.bannerMs + 200);
+  step(fresh, c3, OPEN + 200);
   assert.equal(readG(r3).phase, 'play');
 });
 
