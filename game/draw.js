@@ -964,10 +964,15 @@ export function drawBomber(ctx, v, d, now) {
   // boots
   const bw = S * 0.17;
   const bh = S * 0.11;
-  ctx.fillStyle = '#0f131c';
   const boot = (cx, by) => {
+    ctx.fillStyle = '#1b2232';
+    rr(ctx, cx - bw * 0.32, by - bh - S * 0.1, bw * 0.64, S * 0.13, S * 0.03);
+    ctx.fill();
+    ctx.fillStyle = '#0f131c';
     rr(ctx, cx - bw / 2, by - bh, bw, bh, S * 0.04);
     ctx.fill();
+    ctx.fillStyle = col.main;
+    ctx.fillRect(cx - bw / 2 + S * 0.015, by - bh * 0.45, bw - S * 0.03, Math.max(1, S * 0.025));
   };
   if (sx !== 0) {
     boot(-S * 0.1 + stride * S * 0.13, -S * 0.0);
@@ -1107,10 +1112,10 @@ export function drawTag(ctx, v, d, now) {
   const px = v.ox + d.x * S;
   const top = v.oy + d.y * S + S * 0.36 - S * 1.2;
   const col = PLAYER_COLORS[d.c % PLAYER_COLORS.length];
-  if (d.name) label(ctx, d.name, px, top - S * 0.1, clamp(S * 0.3, 11, 19), { fill: d.ring ? '#ffffff' : '#e8eef9', weight: 700 });
+  if (d.name) label(ctx, d.name, px, top - S * 0.17, clamp(S * 0.3, 11, 19), { fill: d.ring ? '#ffffff' : '#e8eef9', weight: 700 });
   if (d.arrow) {
     const bob = Math.sin(now * 6) * S * 0.07;
-    const ay = top - S * 0.42 + bob;
+    const ay = top - S * 0.66 + bob;
     ctx.fillStyle = col.main;
     ctx.strokeStyle = '#05080f';
     ctx.lineWidth = Math.max(2, S * 0.07);

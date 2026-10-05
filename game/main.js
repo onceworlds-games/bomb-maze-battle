@@ -122,7 +122,7 @@ async function boot() {
     else if (mode === 'lobby') layoutBoard(view, W, H, sc(62), 96);
     else {
       layoutBoard(view, W, H, sc(58), sc(10));
-      if (view.ox < sc(170)) layoutBoard(view, W, H, sc(58 + 52), sc(10)); // no room at the sides: the table goes in a row under the bar
+      if (view.ox < Math.max(118, sc(150)) + Math.max(14, sc(20))) layoutBoard(view, W, H, sc(58 + 52 + 44), sc(10)); // no room at the sides: the table and your power-ups go in rows under the bar
     }
   }
 
@@ -210,7 +210,10 @@ async function boot() {
     finalFor = null;
     lastFinalG = null;
     callout = null;
-    if (!goPlayed) goPlayed = true;
+    if (!goPlayed) {
+      goPlayed = true;
+      sound.go();
+    }
     host.adopt();
   });
   room.on('matchend', (match, previous) => {
@@ -432,7 +435,8 @@ async function boot() {
     fx.dust(tx + 0.5, ty + 0.8, 3);
     fx.shake(0.04);
     if (room.isHost) {
-      if (!host.onMessage({ t: 'bomb', rid: g.rid, x: tx, y: ty }, room.me)) sound.deny();
+      if (host.onMessage({ t: 'bomb', rid: g.rid, x: tx, y: ty }, room.me)) b.pass.push(idx(tx, ty));
+      else sound.deny();
       return;
     }
     m.pending.push({ x: tx, y: ty, born: performance.now(), at: field.t + FUSE_MS, key: -(++pendingSeq) });
@@ -522,6 +526,11 @@ async function boot() {
     const crushed = field.crushedBy(i, t);
     const burning = field.fireOn(i, t);
     const now = performance.now();
+    if (m.st === 1 && t < SC.inv) {
+      m.st = 0; // the host's shield took it after all
+      m.claims = 0;
+      return;
+    }
     if (!crushed && !burning) {
       if (m.st === 1 && now - m.hitAt > 1400) {
         m.st = 0; // the host did not take it (a shield, a blast that never was)
@@ -1364,10 +1373,6 @@ async function boot() {
       }
       if (age >= 0) ui.drawBanner(ctx, W, H, u, 'LAST ONE STANDING', `ROUND ${g.rn}`, age, T.bannerMs / 1000, fx.reduced);
       else if (g.rn === 1) ui.drawCountdown(ctx, W, H, u, 'GO!', now / T.openingMs, fx.reduced);
-      if (g.rn === 1 && age < 0 && !goPlayed) {
-        goPlayed = true;
-        sound.go();
-      }
     } else if (g.phase === 'play') {
       if (!c.flags.playSeen) {
         c.flags.playSeen = true;

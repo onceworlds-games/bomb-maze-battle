@@ -23,7 +23,7 @@ export function setHit(h, x, y, w, hgt) {
 }
 export const inHit = (h, x, y) => h.on && x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h;
 
-export const uiScale = (W, H) => clamp(Math.min(W / 860, H / 480), 0.72, 1.55);
+export const uiScale = (W, H) => clamp(Math.min(W / 800, H / 440), 0.8, 1.55);
 const px = (n, u, min = 0) => Math.max(min, Math.round(n * u));
 
 /** A flat dark panel with its corners cut and a thin accent line along the top. */
@@ -75,9 +75,9 @@ export function drawTitle(ctx, W, H, u, now, touch = false) {
   label(ctx, 'BOMB MAZE', cx, y1, big, { spacing: big * 0.04, outline: 0.14 });
   label(ctx, 'BATTLE', cx, y2, big, { fill: ACCENT, spacing: big * 0.14, outline: 0.14 });
   const bh = Math.max(5, big * 0.1);
-  const wBar = Math.min(W * 0.2, big * 2.3);
-  hazardBar(ctx, cx - wBar - big * 1.75, y2 - bh / 2, wBar, bh);
-  hazardBar(ctx, cx + big * 1.75, y2 - bh / 2, wBar, bh);
+  const wBar = Math.max(10, Math.min(W / 2 - big * 2.45 - 12, big * 2.3));
+  hazardBar(ctx, cx - wBar - big * 2.45, y2 - bh / 2, wBar, bh);
+  hazardBar(ctx, cx + big * 2.45, y2 - bh / 2, wBar, bh);
   // the one button
   const bw = px(270, u, 200);
   const bhh = px(78, u, 62);
@@ -99,7 +99,7 @@ export function drawTitle(ctx, W, H, u, now, touch = false) {
   label(ctx, 'PLAY', 0, 2, Math.min(px(42, u, 28), bhh * 0.62), { fill: '#161008', outline: 0, spacing: 3 });
   ctx.restore();
   setHit(hits.play, bx, by, bw, bhh);
-  if (!touch) label(ctx, 'ENTER', cx, by + bhh + px(22, u, 14), px(14, u, 11), { fill: 'rgba(255,255,255,0.55)', outline: 0.1, weight: 700, spacing: 2 });
+  if (!touch) label(ctx, 'ENTER', cx, by + bhh + px(22, u, 14), px(14, u, 12), { fill: 'rgba(255,255,255,0.55)', outline: 0.1, weight: 700, spacing: 2 });
 }
 
 // ------------------------------------------------------------------ lobby
@@ -123,7 +123,7 @@ export function drawLobbyTop(ctx, W, H, u, st, now) {
   chips.forEach((c, i) => {
     const x = x0 + i * (cw + gap);
     panel(ctx, x, y, cw, hgt, st.editable ? ACCENT : 'rgba(255,255,255,0.35)', { cut: 8 });
-    label(ctx, c.cap, x + px(12, u, 9), y + hgt * 0.3, px(12, u, 10), { align: 'left', fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 2 });
+    label(ctx, c.cap, x + px(12, u, 9), y + hgt * 0.3, px(12, u, 11), { align: 'left', fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 2 });
     label(ctx, c.val, x + px(12, u, 9), y + hgt * 0.69, Math.min(px(26, u, 18), (cw - px(40, u, 30)) / Math.max(4, c.val.length) * 1.55), { align: 'left', outline: 0.12 });
     if (st.editable) {
       // a cycle mark at the right edge: this one can be changed
@@ -273,11 +273,11 @@ export function playerChip(ctx, x, y, w, hgt, p, need, u, now, o = {}) {
   const tx = fx + r * 1.4 + px(7, u, 5);
   const room = x + w - tx - px(26, u, 20);
   if (!o.noName) {
-    ctx.font = `700 ${px(14, u, 11)}px sans-serif`;
-    label(ctx, fitName(p.name, room, px(14, u, 11)), tx, y + hgt * 0.34, px(14, u, 11), { align: 'left', weight: 700, outline: 0.12, fill: '#f2f5fb' });
+    ctx.font = `700 ${px(14, u, 12)}px sans-serif`;
+    label(ctx, fitName(p.name, room, px(14, u, 12)), tx, y + hgt * 0.34, px(14, u, 12), { align: 'left', weight: 700, outline: 0.12, fill: '#f2f5fb' });
     pips(ctx, tx, y + hgt * 0.74, p.wins, need, col.main, u);
   } else pips(ctx, tx - px(2, u), y + hgt * 0.5, p.wins, need, col.main, u);
-  drawGlyph(ctx, col.shape, x + w - px(14, u, 11), y + hgt / 2, px(5.6, u, 4.5), col.main);
+  drawGlyph(ctx, col.shape, x + w - px(14, u, 12), y + hgt / 2, px(5.6, u, 4.5), col.main);
   if (p.out) {
     ctx.globalAlpha = 0.9;
     ctx.strokeStyle = '#ff4a4a';
@@ -307,26 +307,27 @@ function fitName(name, room, size) {
  */
 export function drawHud(ctx, W, H, u, h, now) {
   const top = px(8, u, 6);
-  // the clock, top centre
   const cw = px(160, u, 118);
   const ch = px(48, u, 40);
+  const n = h.players.length;
+  const chipW = px(150, u, 118);
+  const chipH = px(42, u, 34);
+  const gap = px(6, u, 4);
+  const sides = h.board.ox >= chipW + px(20, u, 14);
+  // the clock, top centre (kept clear of the platform's buttons in the top-left corner)
+  const clockX = Math.max((W - cw) / 2, Math.min(136, W - cw - 6));
   const sd = h.clock < 0;
   const secs = Math.max(0, Math.ceil(h.clock / 1000));
   const mm = Math.floor(secs / 60);
   const ss = String(secs % 60).padStart(2, '0');
   const urgent = !sd && secs <= 10;
   const flash = sd || urgent ? 0.5 + 0.5 * Math.sin(now * (sd ? 7 : 9)) : 0;
-  panel(ctx, (W - cw) / 2, top, cw, ch, sd ? '#ff4a3a' : urgent ? '#ff8a3a' : ACCENT, { cut: 9, fill: sd ? `rgba(60,10,10,${0.84 + 0.1 * flash})` : PANEL });
-  label(ctx, `ROUND ${h.round}`, W / 2, top + ch * 0.25, px(12, u, 10), { fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 3 });
-  if (sd) label(ctx, 'SUDDEN DEATH', W / 2, top + ch * 0.64, px(17, u, 13), { fill: '#ff6a5a', outline: 0.1, spacing: 1 });
-  else label(ctx, `${mm}:${ss}`, W / 2, top + ch * 0.64, px(27, u, 20), { fill: urgent ? '#ffb070' : '#ffffff', outline: 0.12, spacing: 1 });
+  panel(ctx, clockX, top, cw, ch, sd ? '#ff4a3a' : urgent ? '#ff8a3a' : ACCENT, { cut: 9, fill: sd ? `rgba(60,10,10,${0.84 + 0.1 * flash})` : PANEL });
+  label(ctx, `ROUND ${h.round}`, clockX + cw / 2, top + ch * 0.25, px(12, u, 11), { fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 3 });
+  if (sd) label(ctx, 'SUDDEN DEATH', clockX + cw / 2, top + ch * 0.64, px(17, u, 13), { fill: '#ff6a5a', outline: 0.1, spacing: 1 });
+  else label(ctx, `${mm}:${ss}`, clockX + cw / 2, top + ch * 0.64, px(27, u, 20), { fill: urgent ? '#ffb070' : '#ffffff', outline: 0.12, spacing: 1 });
   // the table
-  const n = h.players.length;
-  const chipW = px(150, u, 118);
-  const chipH = px(42, u, 34);
-  const gap = px(6, u, 4);
-  const sideRoom = h.board.ox;
-  const sides = sideRoom >= chipW + px(20, u, 14);
+  let rowBottom = top + ch;
   if (sides) {
     const perCol = Math.min(4, Math.ceil(n / 2) || 1);
     const y0 = px(66, u, 58);
@@ -337,14 +338,15 @@ export function drawHud(ctx, W, H, u, h, now) {
       playerChip(ctx, x, y0 + row * (chipH + gap), chipW, chipH, p, h.need, u, now);
     });
   } else {
-    const w = px(66, u, 52);
+    const w = Math.min(px(66, u, 52), (W - 12 - (n - 1) * gap) / Math.max(1, n));
     const total = n * w + (n - 1) * gap;
     const x0 = (W - total) / 2;
     const y = top + ch + px(8, u, 6);
     h.players.forEach((p, i) => playerChip(ctx, x0 + i * (w + gap), y, w, chipH, p, h.need, u, now, { noName: true }));
+    rowBottom = y + chipH;
   }
-  // your own power-ups, top right
-  let bottom = top + ch;
+  // your own power-ups: top right, or under the table when the top is shared
+  let bottom = rowBottom;
   if (h.mine) {
     const m = h.mine;
     const items = [
@@ -358,14 +360,15 @@ export function drawHud(ctx, W, H, u, h, now) {
     const iw = px(52, u, 42);
     const pw = items.length * iw + px(10, u, 8);
     const ph = px(40, u, 34);
-    const x = W - pw - px(12, u, 8);
-    panel(ctx, x, top, pw, ph, '#ffffff', { cut: 7 });
+    const x = sides ? W - pw - px(12, u, 8) : (W - pw) / 2;
+    const y = sides ? top : rowBottom + px(6, u, 4);
+    panel(ctx, x, y, pw, ph, '#ffffff', { cut: 7 });
     items.forEach(([k, v], i) => {
-      const cx = x + px(5, u, 4) + i * iw + px(14, u, 11);
-      drawIcon(ctx, k, cx, top + ph / 2 + 1, px(11, u, 9), ITEM_COLORS[k]);
-      if (k === 'b' || k === 'r' || k === 's') label(ctx, `${v}`, cx + px(20, u, 15), top + ph / 2 + 1, px(17, u, 13), { outline: 0.12, weight: 800 });
+      const cx = x + px(5, u, 4) + i * iw + px(14, u, 12);
+      drawIcon(ctx, k, cx, y + ph / 2 + 1, px(11, u, 9), ITEM_COLORS[k]);
+      if (k === 'b' || k === 'r' || k === 's') label(ctx, `${v}`, cx + px(20, u, 15), y + ph / 2 + 1, px(17, u, 13), { outline: 0.12, weight: 800 });
     });
-    bottom = Math.max(bottom, top + ph);
+    bottom = Math.max(bottom, y + ph);
   }
   return bottom;
 }
@@ -381,7 +384,7 @@ export function drawScore(ctx, W, H, u, s, now) {
   const x = (W - pw) / 2;
   const y = Math.max(px(66, u, 58), (H - ph) / 2 - px(10, u));
   panel(ctx, x, y, pw, ph, ACCENT);
-  label(ctx, `ROUND ${s.round}`, x + pw / 2, y + head * 0.24, px(14, u, 11), { fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 3 });
+  label(ctx, `ROUND ${s.round}`, x + pw / 2, y + head * 0.24, px(14, u, 12), { fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 3 });
   const title = s.winner ? `${s.winner.name} WINS` : 'DRAW';
   label(ctx, title, x + pw / 2, y + head * 0.64, Math.min(px(32, u, 20), pw / Math.max(6, title.length) * 1.5), { fill: s.winner ? PLAYER_COLORS[s.winner.c % 8].main : '#ffffff', outline: 0.12, spacing: 1 });
   const pop = clamp(s.age / 0.5, 0, 1);
@@ -469,7 +472,7 @@ export function drawPodium(ctx, W, H, u, s, now, reduced) {
     ctx.beginPath();
     ctx.arc(x + bw / 2, hy, r, 0, TAU);
     ctx.stroke();
-    label(ctx, fitName(p.name, bw, px(16, u, 12)), x + bw / 2, hy - r - px(14, u, 11), px(16, u, 12), { weight: 700, outline: 0.14 });
+    label(ctx, fitName(p.name, bw, px(16, u, 12)), x + bw / 2, hy - r - px(14, u, 12), px(16, u, 12), { weight: 700, outline: 0.14 });
     if (p.you) label(ctx, 'YOU', x + bw / 2, hy - r - px(32, u, 25), px(12, u, 10), { fill: ACCENT, outline: 0.1, weight: 800, spacing: 3 });
     if (ri === 0) {
       // a crown
@@ -503,7 +506,7 @@ export function drawPodium(ctx, W, H, u, s, now, reduced) {
     const y = floor + px(40, u, 30);
     panel(ctx, x, y, aww, px(34, u, 28), ACCENT, { cut: 6 });
     label(ctx, a.cap, x + px(10, u, 8), y + px(11, u, 9), px(10, u, 9), { align: 'left', fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 2 });
-    label(ctx, fitName(a.who, aww - px(16, u, 12), px(14, u, 11)), x + px(10, u, 8), y + px(25, u, 20), px(14, u, 11), { align: 'left', weight: 800, outline: 0.1 });
+    label(ctx, fitName(a.who, aww - px(16, u, 12), px(14, u, 12)), x + px(10, u, 8), y + px(25, u, 20), px(14, u, 12), { align: 'left', weight: 800, outline: 0.1 });
   });
 }
 
@@ -517,7 +520,7 @@ export function drawResultsCard(ctx, W, H, u, s) {
   const y = H - px(104, u, 98) - h;
   panel(ctx, x, Math.max(px(70, u, 62), y), w, h, ACCENT);
   const yy = Math.max(px(70, u, 62), y);
-  label(ctx, 'RESULTS', x + w / 2, yy + px(20, u, 15), px(14, u, 11), { fill: ACCENT, outline: 0, weight: 800, spacing: 4 });
+  label(ctx, 'RESULTS', x + w / 2, yy + px(20, u, 15), px(14, u, 12), { fill: ACCENT, outline: 0, weight: 800, spacing: 4 });
   rows.forEach((p, i) => {
     const col = PLAYER_COLORS[p.c % 8];
     const ry = yy + px(36, u, 28) + i * rowH;
