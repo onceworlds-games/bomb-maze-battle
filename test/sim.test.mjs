@@ -526,3 +526,17 @@ test('fuzz: a thousand random requests and steps never break the world', () => {
     assert.ok(sim.t > 90000, 'ran well into sudden death');
   }
 });
+
+test('halting sudden death keeps the pillars that have dropped and drops no more', () => {
+  const sim = mk();
+  sim.t = SD_AT_MS + 3000;
+  const n = sim.dropCount();
+  assert.ok(n > 5);
+  sim.haltSuddenDeath();
+  assert.equal(sim.dropCount(), n);
+  run(sim, 20000);
+  assert.equal(sim.dropCount(), n, 'nothing more falls');
+  sim.haltSuddenDeath();
+  assert.equal(sim.dropCount(), n);
+  assert.deepEqual(sim.warned(), []);
+});

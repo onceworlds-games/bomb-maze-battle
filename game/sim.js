@@ -321,6 +321,13 @@ export class Sim extends Field {
     this.dirty = true;
   }
 
+  /** The round is decided: no more pillars fall (those that have stay). */
+  haltSuddenDeath() {
+    if (this.sd[0] >= 1e12) return;
+    this.sd = [1e12, this.sd[1], this.dropCount(this.t)];
+    this.dirty = true;
+  }
+
   // ------------------------------------------------------------ time
   slideFree(x, y) {
     if (!inside(x, y)) return false;

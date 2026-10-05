@@ -90,6 +90,7 @@ export class MatchCore {
     } else this.settleAt = -1;
     if (this.settleAt >= 0 && sim.t >= this.settleAt) this.result = { winner: alive.length === 1 ? alive[0] : null };
     else if (sim.t > SD_AT_MS + T.hardCapMs) this.result = { winner: alive.length === 1 ? alive[0] : null };
+    if (this.result) sim.haltSuddenDeath(); // the walls stop closing in once it is decided
   }
 
   /** Puts the round into the totals. Returns { winner, matchOver }. */

@@ -92,6 +92,7 @@ test('the round ends when one is left, after a moment for late claims; if the la
   assert.ok(core.settleAt > sim.t);
   core.advance(sim.t + T.settleMs + 100);
   assert.deepEqual(core.result, { winner: 'h1' });
+  assert.ok(sim.sd[0] >= 1e12, 'the walls stop closing in once the round is decided');
   const out = core.finishRound();
   assert.equal(out.winner, 'h1');
   assert.equal(core.wins.h1, 1);

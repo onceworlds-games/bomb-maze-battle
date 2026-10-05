@@ -717,7 +717,7 @@ async function boot() {
       }
       c.prevCount = count;
     }
-    if (!c.flags.sdSeen && (count > 0 || field.warned(t, scratch.warn).length > 0)) {
+    if (!c.flags.sdSeen && g.phase === 'play' && (count > 0 || field.warned(t, scratch.warn).length > 0)) {
       c.flags.sdSeen = true;
       if (!silent) {
         sound.alarm();
