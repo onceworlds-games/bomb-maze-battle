@@ -437,3 +437,29 @@ test('standing in for the platform: the stub room runs a solo match and cleans u
   }
   assert.ok(COLS > 0 && ROWS > 0 && spawnOf(0)[0] === 1);
 });
+
+test('fuzz: garbage from other pages never throws and never breaks the record', () => {
+  const { room, clock } = makeRoom();
+  const host = new Host(room, adapter(clock));
+  host.adopt();
+  presence(room, 'h2', 13.5, 11.5, 1);
+  step(host, clock, OPEN + 100);
+  const rid = readG(room).rid;
+  const vals = [undefined, null, NaN, Infinity, -Infinity, -1, 0, 1, 1.5, 7, 13, 99, 1e12, 'x', '', [], {}, [1, 2], { x: 1 }, true, () => 1];
+  const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+  const types = ['bomb', 'out', 'take', 'kick', 'x', undefined, 5, null, 'badge', 'no'];
+  const from = [{ id: 'h2' }, { id: 'h1' }, { id: 'bot1' }, { id: 'zzz' }, null, undefined, {}, { id: 5 }];
+  for (let i = 0; i < 4000; i++) {
+    const d = i % 7 === 0 ? rnd(vals) : { t: rnd(types), rid: i % 3 ? rid : rnd(vals), x: rnd(vals), y: rnd(vals), i: rnd(vals), f: rnd(vals), dx: rnd(vals), dy: rnd(vals) };
+    assert.doesNotThrow(() => host.onMessage(d, rnd(from)));
+    if (i % 20 === 0) step(host, clock, 20);
+  }
+  assert.ok(readG(room), 'the record is still a record');
+  step(host, clock, 3000);
+  assert.ok(readG(room));
+  // garbage in the room's state: the host starts over rather than throwing
+  room.state.g = { nonsense: true };
+  assert.doesNotThrow(() => host.pump());
+  assert.doesNotThrow(() => host.adopt());
+  assert.ok(readG(room), 'a fresh record');
+});

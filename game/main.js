@@ -457,6 +457,7 @@ async function boot() {
 
   const DIR_VEC = [[0, -1], [1, 0], [0, 1], [-1, 0]];
   let pendingSeq = 0;
+  let dustAt = 0;
 
   function stepMe(g, c, field, dt) {
     const m = me;
@@ -489,6 +490,10 @@ async function boot() {
       body.bump = -1;
     }
     prunePass(body);
+    if (body.moving && animT - dustAt > 0.16) {
+      dustAt = animT;
+      fx.dust(body.x, body.y + 0.36, 1);
+    }
     if (canAct) {
       if (INP.bomb) tryBomb(g, field);
       if (INP.kick && SC.k) {
@@ -951,13 +956,14 @@ async function boot() {
   function makeDemo() {
     const core = new MatchCore({ seed: (Math.random() * 4294967296) >>> 0, need: 2, map: ['classic', 'cross', 'rings'][Math.floor(Math.random() * 3)], seats: 4 });
     const sim = core.beginRound();
-    return { core, sim, endedAt: 0, vis: new Map(), c: new RoundCtx({ rid: 'demo', rn: 1, out: {}, roster: core.roster }), t0: performance.now() };
+    return { core, sim, endedAt: 0, clock: 0, c: new RoundCtx({ rid: 'demo', rn: 1, out: {}, roster: core.roster }) };
   }
 
   function stepDemo(dt) {
     if (!demo) demo = makeDemo();
     const d = demo;
-    d.core.advance(d.sim.t + Math.min(dt, 0.06) * 1000);
+    d.clock += Math.min(dt, 0.06) * 1000;
+    d.core.advance(d.clock);
     d.sim.events.length = 0;
     const alive = d.sim.aliveIds().length;
     if (d.core.result || alive <= 1) {
@@ -1002,6 +1008,10 @@ async function boot() {
         const blocked = (tx, ty) => sim.codeAt(tx, ty, lobbyMe.pass, sim.t);
         stepBody(lobbyMe, INP.dx, INP.dy, STEP, speedOf({ s: 0 }), blocked);
         prunePass(lobbyMe);
+        if (lobbyMe.moving && animT - dustAt > 0.16) {
+          dustAt = animT;
+          fx.dust(lobbyMe.x, lobbyMe.y + 0.36, 1);
+        }
         if (INP.bomb) {
           if (sim.placeBomb(lobbyId(), Math.floor(lobbyMe.x), Math.floor(lobbyMe.y))) {
             sound.place();

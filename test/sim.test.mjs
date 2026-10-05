@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { N, COLS, idx, tileX, tileY, FUSE_MS, BLAST_MS, STEP_MS, INV_MS, HOST_GRACE_MS, SD_AT_MS, SD_STEP_MS, SD_FAST_STEP_MS, SD_WARN_MS, CAPS, layoutOf, encodeBits } from '../game/rules.js';
+import { N, COLS, idx, tileX, tileY, mulberry32, ITEM_KINDS, FUSE_MS, BLAST_MS, STEP_MS, INV_MS, HOST_GRACE_MS, SD_AT_MS, SD_STEP_MS, SD_FAST_STEP_MS, SD_WARN_MS, CAPS, layoutOf, encodeBits } from '../game/rules.js';
 import { Sim, Field, blastOf, fieldFromRecord, simFromRecord } from '../game/sim.js';
 import { makeBody } from '../game/move.js';
 
@@ -483,4 +483,46 @@ test('the field answers: tile codes, crush warnings, bombs by tile', () => {
   assert.equal(layoutOf('classic').order.length, f.order.length);
   assert.equal(tileX(idx(4, 5)), 4);
   assert.equal(tileY(idx(4, 5)), 5);
+});
+
+test('fuzz: a thousand random requests and steps never break the world', () => {
+  for (const map of ['classic', 'cross', 'rings']) {
+    const rnd = mulberry32(map.length * 31);
+    const sim = new Sim({ map, seed: 77, roster: [{ id: 'p1', bot: 0 }, { id: 'p2', bot: 0 }, { id: 'b1', bot: 1 }], practice: false });
+    const stats = sim.stats;
+    for (const s of stats.values()) {
+      s.b = 4;
+      s.k = 1;
+    }
+    sim.bodies.set('b1', makeBody(1.5, 1.5));
+    const ids = ['p1', 'p2', 'b1', 'nobody'];
+    for (let step = 0; step < 6000; step++) {
+      const id = ids[Math.floor(rnd() * ids.length)];
+      const r = rnd();
+      const x = Math.floor(rnd() * 17) - 1;
+      const y = Math.floor(rnd() * 15) - 1;
+      if (r < 0.04) sim.placeBomb(id, x, y);
+      else if (r < 0.05) sim.kickBomb(id, x, y, Math.floor(rnd() * 3) - 1, Math.floor(rnd() * 3) - 1);
+      else if (r < 0.06) sim.takeItem(id, Math.floor(rnd() * 220) - 10);
+      else if (r < 0.07) sim.claimOut(id, Math.floor(rnd() * 220) - 10);
+      else if (r < 0.075) sim.items.push({ i: idx(1 + Math.floor(rnd() * 13), 1 + Math.floor(rnd() * 11)), k: ITEM_KINDS[Math.floor(rnd() * 6)], born: sim.t });
+      else if (r < 0.076 && step > 3000) sim.speedUpSuddenDeath();
+      if (r > 0.9) sim.bodies.set('p1', { x: 1 + rnd() * 13, y: 1 + rnd() * 11 });
+      sim.tick();
+      if (step % 50 === 0) {
+        for (const b of sim.bombs) {
+          assert.ok(Number.isInteger(b.x) && Number.isInteger(b.y) && b.x >= 1 && b.y >= 1 && b.x <= 13 && b.y <= 11, `a bomb at ${b.x},${b.y}`);
+          assert.ok(Number.isFinite(b.at) && b.pr >= 0 && b.pr < 1.5);
+        }
+        for (const it of sim.items) assert.ok(it.i >= 0 && it.i < N);
+        for (let i = 0; i < N; i++) assert.ok(!(sim.pillars[i] && sim.crates[i]), 'a crate on a pillar');
+        for (const s of stats.values()) assert.ok(s.b >= 1 && s.b <= CAPS.b && s.r >= 2 && s.r <= CAPS.r && s.s <= CAPS.s && Number.isFinite(s.inv));
+        for (const id2 of ['p1', 'p2', 'b1']) assert.ok(sim.ownedBombs(id2) <= Math.max(stats.get(id2).b, 4));
+        const rec = sim.record();
+        assert.ok(JSON.stringify(rec).length < 12000, `record ${JSON.stringify(rec).length} bytes`);
+      }
+      sim.events.length = 0;
+    }
+    assert.ok(sim.t > 90000, 'ran well into sudden death');
+  }
 });
