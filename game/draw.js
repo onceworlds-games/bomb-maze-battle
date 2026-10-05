@@ -10,7 +10,7 @@ const TAU = Math.PI * 2;
 export const ITEM_COLORS = { b: '#7aa2ff', r: '#ff8a1f', s: '#ffe14a', k: '#3de0ff', p: '#ff5cd6', h: '#5bffb0' };
 
 export function makeView() {
-  return { W: 0, H: 0, pr: 1, S: 32, ox: 0, oy: 0, fh: 9, sprites: null, quality: 2 };
+  return { W: 0, H: 0, pr: 1, S: 32, ox: 0, oy: 0, fh: 9, sprites: null, quality: 2, reduced: false };
 }
 
 /** Fits the board between `top` and `bottom` pixels of the window. */
@@ -463,7 +463,7 @@ export function drawGround(ctx, v, sc, now, scratch) {
       if (left > 900 || left < -BLAST_MS) continue;
       if (left <= 0) continue;
       const k = 1 - clamp(left / 900, 0, 1);
-      ctx.globalAlpha = 0.07 + 0.2 * k * (0.7 + 0.3 * Math.sin(now * 22));
+      ctx.globalAlpha = 0.07 + 0.2 * k * (v.reduced ? 0.85 : 0.7 + 0.3 * Math.sin(now * 22));
       ctx.fillStyle = '#ff4630';
       ctx.fillRect(v.ox + tileX(i) * S + 1, v.oy + tileY(i) * S + 1, S - 2, S - 2);
     }
@@ -474,7 +474,7 @@ export function drawGround(ctx, v, sc, now, scratch) {
   for (const i of warn) {
     const x = v.ox + tileX(i) * S;
     const y = v.oy + tileY(i) * S;
-    const k = 0.5 + 0.5 * Math.sin(now * 16);
+    const k = v.reduced ? 0.6 : 0.5 + 0.5 * Math.sin(now * 16);
     ctx.save();
     ctx.beginPath();
     ctx.rect(x, y, S, S);
@@ -698,7 +698,7 @@ export function drawFire(ctx, v, f, t, map, now) {
       const y = tileY(i);
       const grow = clamp(age / 90, 0, 1);
       const fade = age > 340 ? clamp(1 - (age - 340) / 160, 0, 1) : 1;
-      const flick = 0.92 + 0.08 * Math.sin(now * 38 + i * 1.7);
+      const flick = v.reduced ? 1 : 0.92 + 0.08 * Math.sin(now * 38 + i * 1.7);
       const k = (0.4 + 0.6 * grow) * fade * flick;
       const cx = v.ox + (x + 0.5) * S;
       const cy = v.oy + (y + 0.5) * S;
@@ -850,7 +850,7 @@ export function drawBomb(ctx, v, b, now) {
   ctx.globalAlpha = 1;
   // about to go: a white flash
   if (phase > 0.86) {
-    const flash = clamp((phase - 0.86) / 0.14, 0, 1) * (0.5 + 0.5 * Math.sin(now * 55));
+    const flash = clamp((phase - 0.86) / 0.14, 0, 1) * (v.reduced ? 0.6 : 0.5 + 0.5 * Math.sin(now * 55));
     ctx.globalAlpha = flash * 0.55;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -936,7 +936,7 @@ export function drawBomber(ctx, v, d, now) {
   const back = d.dir === 0;
   const bob = d.moving ? Math.abs(Math.sin(d.walk)) * S * 0.055 : Math.sin(now * 2.4 + d.c) * S * 0.012;
   const stride = d.moving ? Math.sin(d.walk) : 0;
-  const alpha = (d.alpha ?? 1) * (d.blink ? (Math.floor(now * 14) % 2 ? 0.45 : 1) : 1);
+  const alpha = (d.alpha ?? 1) * (d.blink ? (v.reduced ? 0.6 : Math.floor(now * 14) % 2 ? 0.45 : 1) : 1);
   const sc = d.scale ?? 1;
   ctx.save();
   ctx.translate(px, fy);

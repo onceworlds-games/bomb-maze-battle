@@ -321,7 +321,7 @@ export function drawHud(ctx, W, H, u, h, now) {
   const mm = Math.floor(secs / 60);
   const ss = String(secs % 60).padStart(2, '0');
   const urgent = !sd && secs <= 10;
-  const flash = sd || urgent ? 0.5 + 0.5 * Math.sin(now * (sd ? 7 : 9)) : 0;
+  const flash = sd || urgent ? (h.reduced ? 0.6 : 0.5 + 0.5 * Math.sin(now * (sd ? 7 : 9))) : 0;
   panel(ctx, clockX, top, cw, ch, sd ? '#ff4a3a' : urgent ? '#ff8a3a' : ACCENT, { cut: 9, fill: sd ? `rgba(60,10,10,${0.84 + 0.1 * flash})` : PANEL });
   label(ctx, `ROUND ${h.round}`, clockX + cw / 2, top + ch * 0.25, px(12, u, 11), { fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 3 });
   if (sd) label(ctx, 'SUDDEN DEATH', clockX + cw / 2, top + ch * 0.64, px(17, u, 13), { fill: '#ff6a5a', outline: 0.1, spacing: 1 });

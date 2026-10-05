@@ -1362,14 +1362,14 @@ async function boot() {
       let a = 0;
       if (warn.includes(i)) a = 0.5;
       else if (danger.start[i] < Infinity && danger.start[i] - t < 700 && danger.start[i] - t > 0) a = 0.35;
-      if (a) ui.drawVignette(ctx, W, H, a * (0.7 + 0.3 * Math.sin(animT * 14)));
+      if (a) ui.drawVignette(ctx, W, H, a * (fx.reduced ? 0.8 : 0.7 + 0.3 * Math.sin(animT * 14)));
     }
     // HUD
     const sd = field.sd;
     const clock = field.dropCount(t) > 0 || field.warned(t, scratch.warn).length > 0 || t >= sd[0] ? -1 : sd[0] - t;
     if (g.phase === 'banner' || g.phase === 'play' || g.phase === 'end') {
       const mine = me && me.st !== 2 ? statsOf(g, field, id, SH) : null;
-      ui.drawHud(ctx, W, H, u, { round: g.rn, clock, players: hudPlayers(g, c, field), need: g.need, mine: mine ? { ...SH } : null, board: view }, animT);
+      ui.drawHud(ctx, W, H, u, { round: g.rn, clock, players: hudPlayers(g, c, field), need: g.need, mine: mine ? { ...SH } : null, board: view, reduced: fx.reduced }, animT);
     }
     if (room.spectating) ui.drawWatching(ctx, W, H, u, Math.round(66 * u));
     else if (me && me.st === 2 && g.phase !== 'score') ui.drawWatching(ctx, W, H, u, Math.round(66 * u), 'OUT');
@@ -1508,6 +1508,7 @@ async function boot() {
       const q = ow?.settings ? (ow.settings.quality === 'low' ? 0 : ow.settings.quality === 'medium' ? 1 : 2) : 2;
       fx.quality = q;
       view.quality = q;
+      view.reduced = fx.reduced;
     } catch {
       // keep the last settings
     }

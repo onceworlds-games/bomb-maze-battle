@@ -66,7 +66,7 @@ function draw(ctx, v, sim, accent, bombers, fx, o = {}) {
   ctx.fillRect(0, 0, v.W, v.H);
   drawGround(ctx, v, sc, NOW, scratch);
   o.afterGround?.();
-  const bombs = sim.bombs.map((b) => ({ x: b.x + 0.5, y: b.y + 0.5, phase: 1 - (b.at - sim.t) / 2400, c: 0, key: b.id }));
+  const bombs = sim.bombs.map((b) => ({ x: b.x + 0.5, y: b.y + 0.5, phase: 1 - (b.at - sim.t) / 2400, c: sim.index.get(b.o) ?? 0, key: b.id }));
   drawStanding(ctx, v, sc, bombs, bombs.length, bombers, bombers.length, NOW);
   drawFireLight(ctx, v, sim, sim.t);
   fx.draw(ctx, v);
@@ -104,6 +104,8 @@ function cover(ctx, W, H) {
   for (const [x, y] of [[2, 7], [1, 7], [12, 7], [13, 7], [7, 2], [7, 1], [5, 5], [9, 5], [5, 9], [9, 9], [1, 5], [13, 9]]) sim.crates[idx(x, y)] = 0;
   const breaking = [[5, 3], [9, 3], [5, 11], [9, 11], [3, 5], [3, 9], [11, 5], [11, 9]];
   plant(sim, 'a', 4, [[7, 7], [7, 3], [7, 11], [3, 7], [11, 7]]);
+  plant(sim, 'b', 2, [[1, 3]], 2100); // two more still ticking, elsewhere
+  plant(sim, 'c', 2, [[13, 3]], 2300);
   sim.items.push(
     { i: idx(5, 5), k: 'b', born: 0 },
     { i: idx(9, 5), k: 'r', born: 0 },
