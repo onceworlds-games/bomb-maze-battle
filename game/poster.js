@@ -420,6 +420,7 @@ export async function runPoster(name) {
   const ctx = canvas.getContext('2d', { alpha: false });
   try {
     await document.fonts.load(`800 60px ${FONT.split(',')[0]}`);
+    await document.fonts.load(`700 24px ${FONT.split(',')[0]}`);
     await document.fonts.ready;
   } catch {
     // the fallback font draws

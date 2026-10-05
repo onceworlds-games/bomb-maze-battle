@@ -107,7 +107,7 @@ async function boot() {
   }
   resize();
   try {
-    document.fonts?.load(`800 40px ${FONT.split(',')[0]}`)?.catch?.(() => {});
+    for (const spec of ['800 40px', '700 20px']) document.fonts?.load(`${spec} ${FONT.split(',')[0]}`)?.catch?.(() => {});
   } catch {
     // the fallback font draws until it loads
   }

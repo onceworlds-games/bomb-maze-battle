@@ -282,9 +282,9 @@ export class Host {
     if (d.t === 'bomb') {
       if (g.phase !== 'play' || !isInt(d.x, 1, COLS - 2) || !isInt(d.y, 1, ROWS - 2)) return false;
       const wall = this.game.nowMs();
-      if (wall - (this.lastBomb.get(id) ?? -1e9) < 90) return false;
+      const quick = wall - (this.lastBomb.get(id) ?? -1e9) < 90; // a held button, or a script
       this.lastBomb.set(id, wall);
-      const ok = near(d.x, d.y, 1.7) && sim.placeBomb(id, d.x, d.y);
+      const ok = !quick && near(d.x, d.y, 1.7) && sim.placeBomb(id, d.x, d.y);
       if (!ok && id !== this.meId) this.room.send({ t: 'no', rid: g.rid, x: d.x, y: d.y }, { to: id });
       if (ok) this.flush(g, true);
       return Boolean(ok);

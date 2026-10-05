@@ -722,7 +722,7 @@ export function drawFire(ctx, v, f, t, map, now) {
 
 /** A soft light from the blasts over the whole scene (after the boxes, so they glow too). */
 export function drawFireLight(ctx, v, f, t) {
-  if (v.quality === 0 || f.fire.length === 0) return;
+  if (v.quality < 2 || f.fire.length === 0) return;
   const S = v.S;
   ctx.globalCompositeOperation = 'lighter';
   for (let n = 0; n < f.fire.length; n++) {
@@ -832,7 +832,7 @@ export function drawBomb(ctx, v, b, now) {
   ctx.arc(px, py, r, 0, TAU);
   ctx.clip();
   const glow = 0.65 + 0.35 * Math.sin(now * TAU * freq + 1.3);
-  if (v.quality > 0) {
+  if (v.quality > 1) {
     ctx.shadowColor = col.main;
     ctx.shadowBlur = S * 0.28 * glow;
   }
