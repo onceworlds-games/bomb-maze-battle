@@ -1,0 +1,22 @@
+{
+  "slug": "bomb-maze-battle",
+  "name": "Bomb Maze Battle",
+  "description": "Drop bombs, blast crates, grab power-ups and be the last one standing.",
+  "dir": "game",
+  "productionBranch": "main",
+  "genre": "Party",
+  "icon": "store/icon.png",
+  "thumbnails": ["store/thumb-1.png", "store/thumb-2.png", "store/thumb-3.png"],
+  "controls": [
+    { "keys": ["W", "A", "S", "D"], "action": "Move" },
+    { "keys": ["Up", "Down", "Left", "Right"], "action": "Move" },
+    { "keys": ["Space"], "action": "Drop a bomb" },
+    { "keys": ["E"], "action": "Kick (needs the kick boot)" }
+  ],
+  "badges": [
+    { "id": "first-win", "name": "First Win", "description": "Win a match.", "icon": "store/badge-first-win.png" },
+    { "id": "chain-reaction", "name": "Chain Reaction", "description": "Set off a chain of 4 bombs.", "icon": "store/badge-chain-reaction.png" },
+    { "id": "triple-trap", "name": "Triple Trap", "description": "Knock out 3 players with one bomb chain.", "icon": "store/badge-triple-trap.png" },
+    { "id": "untouched", "name": "Untouched", "description": "Win a round without picking up a power-up.", "icon": "store/badge-untouched.png" }
+  ]
+}
