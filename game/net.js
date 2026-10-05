@@ -175,7 +175,8 @@ export class Host {
     if (!this.acting) return;
     const g = this.g;
     const core = this.core;
-    if (!g || g.by !== this.meId || !core) return;
+    if (!g) return;
+    if (g.by !== this.meId || !core) return this.adopt(); // the role came while the match was paused (adopt waits for it to run)
     const room = this.room;
     const now = room.matchNow();
     switch (g.phase) {

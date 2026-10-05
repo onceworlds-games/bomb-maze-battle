@@ -189,6 +189,7 @@ async function boot() {
   });
   room.on('host', () => host.adopt());
   room.on('reconnect', () => host.adopt());
+  room.on('matchresume', () => host.adopt());
   room.on('starting', () => {
     if (titleOpen) leaveTitle();
     lastCount = 99;
