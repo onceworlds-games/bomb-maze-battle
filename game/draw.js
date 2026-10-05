@@ -672,7 +672,7 @@ export function drawIcon(ctx, kind, cx, cy, r, col) {
 }
 
 /** Blasts: glowing beams with a white-hot core, drawn as capsules that join up across tiles. */
-function drawFire(ctx, v, f, t, map, now) {
+export function drawFire(ctx, v, f, t, map, now) {
   const fire = f.fire;
   if (fire.length === 0) return;
   const S = v.S;
@@ -910,7 +910,15 @@ export function face(ctx, head, ax, ay, r, initial, col) {
   if (!head) {
     ctx.fillStyle = lin(ctx, ax, ay - r, ax, ay + r, col.main, col.dark);
     ctx.fillRect(ax - r, ay - r, r * 2, r * 2);
-    label(ctx, initial, ax, ay + r * 0.06, r * 1.25, { outline: 0.1, stroke: 'rgba(0,0,0,0.5)' });
+    if (initial) label(ctx, initial, ax, ay + r * 0.06, r * 1.25, { outline: 0.1, stroke: 'rgba(0,0,0,0.5)' });
+    else {
+      // no name to show: two glowing eye slits
+      ctx.fillStyle = '#ffffff';
+      rr(ctx, ax - r * 0.52, ay - r * 0.32, r * 0.34, r * 0.78, r * 0.17);
+      ctx.fill();
+      rr(ctx, ax + r * 0.18, ay - r * 0.32, r * 0.34, r * 0.78, r * 0.17);
+      ctx.fill();
+    }
   }
   ctx.restore();
 }
@@ -1050,7 +1058,7 @@ export function drawBomber(ctx, v, d, now) {
     ctx.save();
     ctx.translate(vx + sx * S * 0.01, vy);
     if (sx !== 0) ctx.scale(0.84, 1);
-    face(ctx, d.head, 0, 0, S * 0.145, d.initial || '?', col);
+    face(ctx, d.head, 0, 0, S * 0.145, d.initial ?? '?', col);
     ctx.restore();
     ctx.save();
     ctx.beginPath();

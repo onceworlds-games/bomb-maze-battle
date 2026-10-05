@@ -11,7 +11,7 @@ export function installFakeDom({ width = 800, height = 450, search = '', ow = nu
   let rafQueue = [];
   const listeners = new Map();
   const problems = [];
-  const stats = { calls: 0, saves: 0, restores: 0, texts: [], frames: 0, maxDepth: 0, audioNodes: 0, sprites: 0, drawImages: 0 };
+  const stats = { calls: 0, saves: 0, restores: 0, texts: [], frames: 0, maxDepth: 0, audioNodes: 0, sprites: 0, drawImages: 0, sum: 0 };
 
   // ---- canvas contexts (the screen's, and one for every offscreen sprite)
   function makeCtx(track) {
@@ -59,6 +59,7 @@ export function installFakeDom({ width = 800, height = 450, search = '', ow = nu
         if (NUMERIC.has(p))
           return (...a) => {
             stats.calls++;
+            for (const n of a) if (typeof n === 'number') stats.sum = (stats.sum + n * 1.000003) % 1e9;
             for (const n of a) if (typeof n === 'number' && !Number.isFinite(n)) problems.push(`${String(p)} with ${n}: ${JSON.stringify(a)}`);
             // a real canvas throws on a negative radius, and an exception in the frame loop stops the game
             if (p === 'arc' && a[2] < 0) problems.push(`arc with a negative radius: ${JSON.stringify(a)}`);
