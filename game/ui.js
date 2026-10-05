@@ -432,7 +432,8 @@ export function drawPodium(ctx, W, H, u, s, now, reduced) {
   ctx.fillRect(0, 0, W, H);
   // light rays from behind the winner
   const cx = W / 2;
-  const floor = H - px(76, u, 56);
+  const ap = px(34, u, 28);
+  const floor = H - px(10, u, 8) - ap - px(34, u, 26);
   ctx.save();
   ctx.globalAlpha = 0.07;
   ctx.fillStyle = ACCENT;
@@ -495,7 +496,7 @@ export function drawPodium(ctx, W, H, u, s, now, reduced) {
   ctx.fillRect(0, floor, W, 2);
   // you, if you are not up there
   const me = s.rows.find((r) => r.you);
-  if (me && me.place > 3) label(ctx, `YOU: ${ordinal(me.place).toUpperCase()}`, cx, floor + px(22, u, 16), px(24, u, 17), { fill: '#ffffff', spacing: 2 });
+  if (me && me.place > 3) label(ctx, `YOU: ${ordinal(me.place).toUpperCase()}`, cx, floor + px(20, u, 16), px(24, u, 17), { fill: '#ffffff', spacing: 2 });
   // awards
   const aw = [];
   if (s.awards?.kos) aw.push({ cap: 'MOST KOS', who: s.awards.kos });
@@ -503,8 +504,8 @@ export function drawPodium(ctx, W, H, u, s, now, reduced) {
   const aww = px(180, u, 130);
   aw.forEach((a, i) => {
     const x = cx - (aw.length * aww + (aw.length - 1) * px(10, u, 6)) / 2 + i * (aww + px(10, u, 6));
-    const y = floor + px(40, u, 30);
-    panel(ctx, x, y, aww, px(34, u, 28), ACCENT, { cut: 6 });
+    const y = H - px(10, u, 8) - ap;
+    panel(ctx, x, y, aww, ap, ACCENT, { cut: 6 });
     label(ctx, a.cap, x + px(10, u, 8), y + px(11, u, 9), px(10, u, 9), { align: 'left', fill: 'rgba(255,255,255,0.6)', outline: 0, weight: 700, spacing: 2 });
     label(ctx, fitName(a.who, aww - px(16, u, 12), px(14, u, 12)), x + px(10, u, 8), y + px(25, u, 20), px(14, u, 12), { align: 'left', weight: 800, outline: 0.1 });
   });
