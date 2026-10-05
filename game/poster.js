@@ -124,7 +124,7 @@ function cover(ctx, W, H) {
   const runners = [bomber(4.3, 5.5, 1, 0, { walk: 1.2 }), bomber(9.5, 8.55, 0, 1, { walk: 2.6 }), bomber(1.5, 9.35, 2, 2, { walk: 0.4 })];
   for (const r of runners) fx.dust(r.x, r.y + 0.35, 4);
   ageFx(fx, 0.07);
-  const v = stage(W, H, 50, W / 2, 396, 7, 7);
+  const v = stage(W, H, 86, W / 2, 430, 7, 7); // close enough that the bombers read at card size
   draw(ctx, v, sim, MAP_ACCENT.classic, runners, fx);
   scrimTop(ctx, W, H, 290);
   vignette(ctx, W, H, 0.55);
@@ -194,8 +194,8 @@ function win(ctx, W, H) {
   const sim = new Sim({ map: 'classic', seed: 9, roster: roster4, crates: new Uint8Array(N) });
   const fx = new Fx(9);
   sim.t = 4000;
-  const S = 50;
-  const v = stage(W, H, S, W / 2, 392, 7, 6);
+  const S = 92;
+  const v = stage(W, H, S, W / 2, 400, 7, 6);
   const hero = bomber(7.5, 6.5, 2, 0, { moving: 0, scale: 1.5, initial: '' });
   hero.ring = true;
   for (const [x, y, z, c] of [[3.2, 5, 3.6, '#ff4d6d'], [12.2, 4.6, 4.3, '#ffd23a'], [7.5, 2.6, 5.2, '#3ddcff'], [10.4, 6.2, 3.2, '#7dff6a'], [4.8, 7.4, 2.8, '#ff9a3a'], [1.6, 3.2, 3.1, '#d27bff']]) {
